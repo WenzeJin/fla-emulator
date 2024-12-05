@@ -11,22 +11,71 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <pda/tran_kv.h>
 
+using DeltaMap = std::unordered_map<PDATransitionKey, PDATransitionValue, PDATransitionKeyHash>;
+
+/**
+ * Execution context for PDAs. All the information needed to run a PDA is stored here.
+ * All the attributes are public for easy access. 
+ * Should only be used in PDAExecutor.
+ */
 struct PDAContext {
+    std::set<std::string> states;           // Q
+    std::string start_state;                // q0
+    std::set<std::string> final_states;     // F
+    std::set<char> input_alphabet;   // Σ
+    std::set<char> stack_alphabet;   // Γ
+    DeltaMap transitions;                   // delta
+
     /**
-     * Execution context for PDAs. All the information needed to run a PDA is stored here.
+     * Validate the PDA context.
+     * User should call this function before running the PDA.
      * 
-     * All the attributes are public for easy access. Should only be used in PDAExecutor.
-     * 
+     * @return true if the context is valid, false otherwise.
      */
+    bool validate() const;
 
-    std::set<std::string> states;                   // Q
-    std::string start_state;                        // q0
-    std::set<std::string> final_states;             // F
-    std::set<std::string> input_alphabet;           // Sigma
-    std::set<std::string> stack_alphabet;           // Gamma
-    std::unordered_map<std::string, std::string> transitions;   // delta
+    /**
+     * Add a transition to the transition table.
+     * 
+     * @param state The current state.
+     * @param input_symbol The input symbol.
+     * @param stack_top The stack top symbol.
+     * @param next_state The next state.
+     * @param stack_action The stack action.
+     * 
+     * @return true if the transition is added successfully, false otherwise.
+     */
+    bool addTransition( const std::string& state,           // q
+                        const char input_symbol,    // a
+                        const char stack_top,       // X
+                        const std::string& next_state,      // q'
+                        const std::string& stack_action );  // Y
+    /**
+     * Get the transition from the transition table. 
+     * API for user to query the transition.
+     * 
+     * @param state The current state.
+     * @param input_symbol The input symbol.
+     * @param stack_top The stack top symbol.
+     * 
+     * @return The transition result, in PDAQueryResult.
+     */
+    PDAQueryResult getTransition( const std::string& state,             // q
+                                  const char input_symbol,      // a
+                                  const char stack_top ) const; // X
 
+private:
+    /**
+     * Get the transition from the transition table.
+     * User will not need to use structure PDATransitionKey or PDATrasitionValue directly.
+     * 
+     * @param key The key of the transition.
+     * 
+     * @return The transition result, in PDAQueryResult.
+     */
+    PDAQueryResult getTransition(const PDATransitionKey& key) const;
 };
 
 #endif

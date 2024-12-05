@@ -15,10 +15,10 @@
 struct PDATransitionKey {
     
     std::string state;       // Current q
-    std::string input;       // input symbol
-    std::string stack_top;   // stack top symbol
+    char input;       // input symbol
+    char stack_top;   // stack top symbol
 
-    PDATransitionKey(std::string state, std::string input, std::string stack_top);
+    PDATransitionKey(std::string state, char input, char stack_top);
 
     bool operator==(const PDATransitionKey& other) const;
 };
@@ -38,6 +38,16 @@ struct PDATransitionValue {
     std::string stack_action; // stack action
 
     PDATransitionValue(std::string next_state, std::string stack_action);
+};
+
+struct PDAQueryResult {
+    std::string next_state;
+    std::string stack_action;
+    bool success;
+
+    PDAQueryResult(std::string next_state, std::string stack_action);
+
+    PDAQueryResult();
 };
 
 #endif

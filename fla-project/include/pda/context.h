@@ -12,7 +12,7 @@
 #include <vector>
 #include <set>
 
-class PDAContext {
+struct PDAContext {
     /**
      * Execution context for PDAs. All the information needed to run a PDA is stored here.
      * 
@@ -20,14 +20,12 @@ class PDAContext {
      * 
      */
 
-public:
     std::set<std::string> states;                   // Q
     std::string start_state;                        // q0
     std::set<std::string> final_states;             // F
     std::set<std::string> input_alphabet;           // Sigma
     std::set<std::string> stack_alphabet;           // Gamma
     std::unordered_map<std::string, std::string> transitions;   // delta
-
 
 };
 

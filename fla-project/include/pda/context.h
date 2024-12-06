@@ -21,6 +21,9 @@ using DeltaMap = std::unordered_map<PDATransitionKey, PDATransitionValue, PDATra
  * Execution context for PDAs. All the information needed to run a PDA is stored here.
  * All the attributes are public for easy access. 
  * Should only be used in PDAExecutor.
+ * 我们规定：
+ * 在转移函数中，如果输入符号或者栈顶符号为`'_'`，则表示空。
+ * 在转移函数中，如果要表示栈操作为空，可以使用空字符串""，而不是使用`'_'`。
  */
 struct PDAContext {
     std::set<std::string> states;           // Q

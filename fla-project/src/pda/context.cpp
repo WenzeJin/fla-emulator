@@ -6,6 +6,7 @@
 
 #include <pda/context.h>
 #include <algorithm>  // For std::all_of
+#include <iostream>
 
 /**
  * Validate the PDA context to ensure it is correctly configured.
@@ -25,40 +26,45 @@ bool PDAContext::validate() const {
         return false;
     }
 
+    //3. 检查 stack_start_symbol 是否在 stack_alphabet 中，或为 '_'
+    if (stack_start_symbol != '_' && stack_alphabet.find(stack_start_symbol) == stack_alphabet.end()) {
+        return false;
+    }
 
-    // 3. 检查 transitions 中的每个键值对是否有效
+
+    // 4. 检查 transitions 中的每个键值对是否有效
     for (auto it = transitions.begin(); it != transitions.end(); ++it) {
         const PDATransitionKey& key = it->first;
         const PDATransitionValue& value = it->second;
 
-        // 检查当前状态是否有效
+        // q: 检查当前状态是否有效
         if (states.find(key.state) == states.end()) {
             return false;
         }
 
-        // 检查输入符号是否在输入字母表中
-        if (input_alphabet.find(key.input) == input_alphabet.end()) {
+        // a: 检查输入符号是否在输入字母表中
+        if (input_alphabet.find(key.input) == input_alphabet.end() && key.input != '_') {
             return false;
         }
 
-        // 检查栈顶符号是否在栈字母表中
+        // X: 检查栈顶符号是否在栈字母表中
         if (stack_alphabet.find(key.stack_top) == stack_alphabet.end()) {
             return false;
         }
 
-        // 检查下一个状态是否在 states 中
+        // q': 检查下一个状态是否在 states 中
         if (states.find(value.next_state) == states.end()) {
             return false;
         }
 
-        // 检查栈操作是否只包含有效的栈符号
+        // Y: 检查栈操作是否只包含有效的栈符号
         if (!std::all_of(value.stack_action.begin(), value.stack_action.end(), [this](char c) {
             return stack_alphabet.find(c) != stack_alphabet.end();
         })) {
             return false;
         }
-        
     }
+    
     return true;
 }
 

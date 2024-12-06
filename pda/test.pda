@@ -1,7 +1,7 @@
 ; This example program for parser testing
 
 ; the finite set of states
-#Q = {q0,q1,q2,accept,*^&} ; where *^& is a invalid state
+#Q = {q0,q1,q2,accept}
 
 ; the finite set of input symbols
 #S = {a,b}

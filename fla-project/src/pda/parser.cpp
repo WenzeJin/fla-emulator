@@ -29,6 +29,8 @@ std::set<std::string> PDAParser::control_tokens = {
 std::regex PDAParser::state_regex = std::regex("[a-zA-Z0-9_]+");
 
 
+
+
 /**
  * Parse a PDA configuration file.
  * 
@@ -45,19 +47,26 @@ PDAContext PDAParser::parse(const std::string& filepath) {
     PDAContext context;
 
     std::string line;
-    int i = 0;
+    int line_idx = 0;
+
     while (std::getline(file, line)) {
-        std::cout << "---------------------" << std::endl;
-
-        std::cout << "Line " << i << ": " << line << std::endl;
-        i++;
-
         // 行预处理
         linePreprocess(line);
 
-        std::cout << "After preprocess: " << line << std::endl;
+        line_idx++;
         // 解析行
-        parseLine(line, context);
+        try {
+            parseLine(line, context);
+        } catch (SyntaxException& e) {
+            // TODO: USE cerr
+            std::cout << "Syntax error";
+            std::cout << " at line " << line_idx << ": " << line;
+            std::cout << std::endl;
+
+            std::cout << e.what() << std::endl;
+            exit(1);
+        }
+        
     }
 
     return context;
@@ -96,7 +105,7 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
 
     if (tokens.size() > 0) {
         if (line[0] == ' ') {
-            throw SyntaxException("Invalid line: " + line + "(leading space but not empty)");
+            throw SyntaxException(line, "leading space but not empty");
         }
     } else {
         return;
@@ -106,52 +115,144 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
     if (control_tokens.find(tokens[0]) == control_tokens.end()) {
         // 无控制符 是转移函数
         // TODO: 解析转移函数
-        std::cout << "Type: Transition" << std::endl;
+
+        // 检查tokens的数量是否满足转移函数要求：5个
+        if (tokens.size() != 5) {
+            throw SyntaxException(line, "invalid number of tokens");
+        }
+
+        std::string state, next_state, stack_action;
+        char input_symbol, stack_top_symbol;
+
+        // 检查状态名是否合法
+        if (std::regex_match(tokens[0], state_regex)) {
+            state = tokens[0];
+        } else {
+            throw SyntaxException(tokens[0], "only [a-zA-Z0-9_]+ allowed");
+        }
+
+        if (std::regex_match(tokens[3], state_regex)) {
+            next_state = tokens[3];
+        } else {
+            throw SyntaxException(tokens[3], "only [a-zA-Z0-9_]+ allowed");
+        }
+
+        // 检查输入符号是否合法
+        if (tokens[1].size() == 1) {
+            input_symbol = tokens[1][0];
+            if (!isValidSymbol(input_symbol) && input_symbol != '_') {
+                throw SyntaxException(std::to_string(input_symbol), "only printable ASCII characters or '_' allowed");
+            }
+        } else {
+            throw SyntaxException(tokens[1], "only single character allowed");
+        }
+
+        // 检查栈顶符号是否合法
+        if (tokens[2].size() == 1) {
+            stack_top_symbol = tokens[2][0];
+            if (!isValidSymbol(stack_top_symbol)) {
+                throw SyntaxException(std::to_string(stack_top_symbol), "only printable ASCII characters or allowed");
+            }
+        } else {
+            throw SyntaxException(tokens[2], "only single character allowed");
+        }
+
+        // 检查栈操作是否合法
+        if (tokens[4] == "_") {
+            stack_action = "";
+        } else {
+            stack_action = tokens[4];
+            for (char c : stack_action) {
+                if (!isValidSymbol(c)) {
+                    throw SyntaxException(std::to_string(c), "only printable ASCII characters allowed, or ONLY '_' for empty");
+                }
+            }
+        }
+
+        // 添加转移函数
+        context.addTransition(state, input_symbol, stack_top_symbol, next_state, stack_action);
+
         return;
+
     } else {
         // 有控制符
         if (tokens.size() < 3 || tokens[1] != "=") {
-            throw SyntaxException("Invalid line: " + line + "(missing '=')");
+            throw SyntaxException(line, "missing '='");
         }
 
         if (tokens[0] == "#Q") {
             // 状态集
-            std::cout << "Type: #Q" << std::endl;
-            std::set<std::string> states = parseBraces(line); 
+            std::set<std::string> states = parseStrBraces(tokens[2]); 
 
             // 检查状态名是否合法
             for (auto state : states) {
                 if (!std::regex_match(state, state_regex)) {
-                    throw SyntaxException("Invalid state name: " + state + "(only [a-zA-Z0-9_]+ allowed)");
+                    throw SyntaxException(state, "only [a-zA-Z0-9_]+ allowed");
                 }
             }
             context.states = std::move(states);
 
-        } else if (tokens[0] == "#S") {
-            // 栈符号集
-            std::cout << "Type: #S" << std::endl;
         } else if (tokens[0] == "#G") {
+            // 栈符号集
+            std::set<char> symbols = parseCharBraces(tokens[2]);
+
+            // 检查栈符号是否合法
+            for (auto symbol : symbols) {
+                if (!isValidSymbol(symbol)) {
+                    throw SyntaxException(std::to_string(symbol), "only printable ASCII characters allowed");
+                }
+            }
+
+            context.stack_alphabet = std::move(symbols);
+
+        } else if (tokens[0] == "#S") {
             // 输入符号集
-            std::cout << "Type: #G" << std::endl;
-            
+            std::set<char> symbols = parseCharBraces(tokens[2]);
+
+            // 检查输入符号是否合法
+            for (auto symbol : symbols) {
+                if (!isValidSymbol(symbol)) {
+                    throw SyntaxException(std::to_string(symbol), "only printable ASCII characters allowed");
+                }
+            }
+
+            context.input_alphabet = std::move(symbols);
+
         } else if (tokens[0] == "#q0") {
             // 初始状态
-            std::cout << "Type: #q0" << std::endl;
+            std::string start_state = tokens[2];
+
+            // 检查初始状态是否合法
+            if (!std::regex_match(start_state, state_regex)) {
+                throw SyntaxException(start_state, "only [a-zA-Z0-9_]+ allowed");
+            }
+
+            context.start_state = std::move(start_state);
 
         } else if (tokens[0] == "#z0") {
             // 初始栈符号
-            std::cout << "Type: #z0" << std::endl;
+            if (tokens[2].size() != 1) {
+                throw SyntaxException(tokens[2], "only single character allowed");
+            }
 
+            char stack_start_symbol = tokens[2][0];
+
+            // 检查初始栈符号是否合法
+
+            if (!isValidSymbol(stack_start_symbol) && stack_start_symbol != '_') {
+                throw SyntaxException(std::to_string(stack_start_symbol), "only printable ASCII characters allowed");
+            }
+
+            context.stack_start_symbol = stack_start_symbol;
 
         } else if (tokens[0] == "#F") {
             // 终止状态集
-            std::cout << "Type: #F" << std::endl;
-            std::set<std::string> final_states = parseBraces(line);
+            std::set<std::string> final_states = parseStrBraces(line);
 
             // 检查终止状态集合是否合法
             for (auto state : final_states) {
                 if (!std::regex_match(state, state_regex)) {
-                    throw SyntaxException("Invalid state name: " + state + "(only [a-zA-Z0-9_]+ allowed)");
+                    throw SyntaxException(state, "only [a-zA-Z0-9_]+ allowed");
                 }
             }
 
@@ -160,7 +261,7 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
     }
 }
 
-std::set<std::string> PDAParser::parseBraces(const std::string& input) {
+std::set<std::string> PDAParser::parseStrBraces(const std::string& input) {
     std::set<std::string> result;
 
     // 找到第一个 '{' 和最后一个 '}'
@@ -180,4 +281,47 @@ std::set<std::string> PDAParser::parseBraces(const std::string& input) {
     }
 
     return result;
+}
+
+/**
+ * 解析集合类型的输入，解析为字符集合。
+ * 
+ * @param input 输入字符串
+ * @return 字符集合
+ * @throw SyntaxException 如果输入格式不正确，即有项目不是单个字符
+ */
+std::set<char> PDAParser::parseCharBraces(const std::string& input) {
+    std::set<char> result;
+
+    // 找到第一个 '{' 和最后一个 '}'
+    size_t start = input.find('{');
+    size_t end = input.find('}');
+
+    // 如果找到有效的大括号位置
+    if (start != std::string::npos && end != std::string::npos && end > start + 1) {
+        std::string content = input.substr(start + 1, end - start - 1);  // 提取 {} 中的内容
+
+        // 使用 stringstream 按逗号分割字符串，但不去除空格
+        std::stringstream ss(content);
+        std::string token;
+        while (std::getline(ss, token, ',')) {
+            if (token.size() != 1) {
+                throw SyntaxException(token, "only single character allowed");
+            }
+            result.insert(token[0]);  
+        }
+    }
+
+    return result;
+}
+
+bool PDAParser::isValidSymbol(char c) {
+    // 检查是否是 ASCII 可显示字符
+    if (c >= 32 && c <= 126) {
+        // 排除不符合要求的字符
+        if (c != ' ' && c != ',' && c != ';' && c != '{' && c != '}' && c != '*' && c != '_') {
+            return true;
+        }
+    }
+    return false;
 }

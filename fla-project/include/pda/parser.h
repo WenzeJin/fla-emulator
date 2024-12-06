@@ -9,22 +9,8 @@
 
 #include <pda/context.h>
 #include <string>
-#include <exception>
 #include <regex>
-
-class SyntaxException : public std::exception {
-private:
-    std::string message;
-
-public:
-    // 构造函数接受一个错误信息
-    explicit SyntaxException(const std::string& msg) : message(msg) {}
-
-    // 重写 what() 方法返回错误信息
-    const char* what() const noexcept override {
-        return message.c_str();
-    }
-};
+#include <utils/syntax_excpt.h>
 
 class PDAParser {
     /**
@@ -35,15 +21,22 @@ class PDAParser {
     static void parseLine(const std::string& line, PDAContext& context);
 
     /**
-     * 解析集合类型的输入
+     * 解析集合类型的输入，解析为字符串集合。
      */
-    static std::set<std::string> parseBraces(const std::string &input);
+    static std::set<std::string> parseStrBraces(const std::string &input);
+
+    /**
+     * 解析集合类型的输入，解析为字符集合。
+     */
+    static std::set<char> parseCharBraces(const std::string &input);
 
     static void linePreprocess(std::string& line);
 
     static std::set<std::string> control_tokens;
 
     static std::regex state_regex;
+
+    static bool isValidSymbol(char c);
 
   public:
     /**

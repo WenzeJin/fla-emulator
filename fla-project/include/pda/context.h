@@ -15,6 +15,8 @@
 
 using DeltaMap = std::unordered_map<PDATransitionKey, PDATransitionValue, PDATransitionKeyHash>;
 
+// TODO: Change the Implementation to unordered_set
+
 /**
  * Execution context for PDAs. All the information needed to run a PDA is stored here.
  * All the attributes are public for easy access. 
@@ -24,8 +26,9 @@ struct PDAContext {
     std::set<std::string> states;           // Q
     std::string start_state;                // q0
     std::set<std::string> final_states;     // F
-    std::set<char> input_alphabet;   // Σ
-    std::set<char> stack_alphabet;   // Γ
+    std::set<char> input_alphabet;          // Σ
+    std::set<char> stack_alphabet;          // Γ
+    char stack_start_symbol;                // Z0, '_' is used as empty
     DeltaMap transitions;                   // delta
 
     /**

@@ -25,8 +25,12 @@ bool PDAContext::validate() const {
         return false;
     }
 
+
     // 3. 检查 transitions 中的每个键值对是否有效
-    for (const auto& [key, value] : transitions) {
+    for (auto it = transitions.begin(); it != transitions.end(); ++it) {
+        const PDATransitionKey& key = it->first;
+        const PDATransitionValue& value = it->second;
+
         // 检查当前状态是否有效
         if (states.find(key.state) == states.end()) {
             return false;
@@ -53,6 +57,7 @@ bool PDAContext::validate() const {
         })) {
             return false;
         }
+        
     }
     return true;
 }
@@ -96,7 +101,7 @@ PDAQueryResult PDAContext::getTransition(const std::string& state, const char in
  */
 PDAQueryResult PDAContext::getTransition(const PDATransitionKey& key) const {
     auto it = transitions.find(key);
-    if (it != transitions.end()) {
+    if (it != transitions.end() && it->second.next_state != "") {
         return PDAQueryResult(it->second.next_state, it->second.stack_action);
     } else {
         return PDAQueryResult();  // 返回默认的失败查询结果

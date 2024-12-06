@@ -38,6 +38,8 @@ struct PDATransitionValue {
     std::string stack_action; // stack action
 
     PDATransitionValue(std::string next_state, std::string stack_action);
+
+    PDATransitionValue();
 };
 
 struct PDAQueryResult {

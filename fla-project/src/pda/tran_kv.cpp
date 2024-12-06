@@ -37,6 +37,11 @@ PDATransitionValue::PDATransitionValue(std::string next_state, std::string stack
     : next_state(std::move(next_state)), stack_action(std::move(stack_action)) {}
 
 /**
+ * 构造函数：初始化 PDATransitionValue
+ */
+PDATransitionValue::PDATransitionValue() : next_state(""), stack_action("") {};
+
+/**
  * 构造函数：初始化 PDAQueryResult（用于成功返回）
  */
 PDAQueryResult::PDAQueryResult(std::string next_state, std::string stack_action)

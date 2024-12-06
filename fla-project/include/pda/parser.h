@@ -10,7 +10,7 @@
 #include <pda/context.h>
 #include <string>
 #include <regex>
-#include <utils/syntax_excpt.h>
+#include <utils/exception.h>
 
 class PDAParser {
     /**

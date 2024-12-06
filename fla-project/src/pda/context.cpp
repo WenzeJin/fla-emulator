@@ -74,13 +74,6 @@ bool PDAContext::validate() const {
  * @return true if the transition is added successfully, false otherwise.
  */
 bool PDAContext::addTransition(const std::string& state, const char input_symbol, const char stack_top, const std::string& next_state, const std::string& stack_action) {
-    // 检查当前状态、输入符号、栈顶符号的有效性
-    if (states.find(state) == states.end() ||
-        input_alphabet.find(input_symbol) == input_alphabet.end() ||
-        stack_alphabet.find(stack_top) == stack_alphabet.end()) {
-        return false;
-    }
-
     // 创建 PDATransitionKey 和 PDATransitionValue
     PDATransitionKey key(state, input_symbol, stack_top);
     PDATransitionValue value(next_state, stack_action);

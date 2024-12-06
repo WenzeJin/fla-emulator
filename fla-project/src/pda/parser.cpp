@@ -57,16 +57,10 @@ PDAContext PDAParser::parse(const std::string& filepath) {
         // 解析行
         try {
             parseLine(line, context);
-        } catch (SyntaxException& e) {
-            // TODO: USE cerr
-            std::cout << "Syntax error";
-            std::cout << " at line " << line_idx << ": " << line;
-            std::cout << std::endl;
-
-            std::cout << e.what() << std::endl;
-            exit(1);
+        } catch (AutomataSyntaxException& e) {
+            e.setLine(line_idx, line);
+            throw e;
         }
-        
     }
 
     return context;
@@ -105,7 +99,7 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
 
     if (tokens.size() > 0) {
         if (line[0] == ' ') {
-            throw SyntaxException(line, "leading space but not empty");
+            throw AutomataSyntaxException(line, "leading space but not empty");
         }
     } else {
         return;
@@ -118,7 +112,7 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
 
         // 检查tokens的数量是否满足转移函数要求：5个
         if (tokens.size() != 5) {
-            throw SyntaxException(line, "invalid number of tokens");
+            throw AutomataSyntaxException(line, "invalid number of tokens");
         }
 
         std::string state, next_state, stack_action;
@@ -128,33 +122,33 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
         if (std::regex_match(tokens[0], state_regex)) {
             state = tokens[0];
         } else {
-            throw SyntaxException(tokens[0], "only [a-zA-Z0-9_]+ allowed");
+            throw AutomataSyntaxException(tokens[0], "only [a-zA-Z0-9_]+ allowed");
         }
 
         if (std::regex_match(tokens[3], state_regex)) {
             next_state = tokens[3];
         } else {
-            throw SyntaxException(tokens[3], "only [a-zA-Z0-9_]+ allowed");
+            throw AutomataSyntaxException(tokens[3], "only [a-zA-Z0-9_]+ allowed");
         }
 
         // 检查输入符号是否合法
         if (tokens[1].size() == 1) {
             input_symbol = tokens[1][0];
             if (!isValidSymbol(input_symbol) && input_symbol != '_') {
-                throw SyntaxException(std::to_string(input_symbol), "only printable ASCII characters or '_' allowed");
+                throw AutomataSyntaxException(std::to_string(input_symbol), "only printable ASCII characters or '_' allowed");
             }
         } else {
-            throw SyntaxException(tokens[1], "only single character allowed");
+            throw AutomataSyntaxException(tokens[1], "only single character allowed");
         }
 
         // 检查栈顶符号是否合法
         if (tokens[2].size() == 1) {
             stack_top_symbol = tokens[2][0];
             if (!isValidSymbol(stack_top_symbol)) {
-                throw SyntaxException(std::to_string(stack_top_symbol), "only printable ASCII characters or allowed");
+                throw AutomataSyntaxException(std::to_string(stack_top_symbol), "only printable ASCII characters or allowed");
             }
         } else {
-            throw SyntaxException(tokens[2], "only single character allowed");
+            throw AutomataSyntaxException(tokens[2], "only single character allowed");
         }
 
         // 检查栈操作是否合法
@@ -164,7 +158,7 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
             stack_action = tokens[4];
             for (char c : stack_action) {
                 if (!isValidSymbol(c)) {
-                    throw SyntaxException(std::to_string(c), "only printable ASCII characters allowed, or ONLY '_' for empty");
+                    throw AutomataSyntaxException(std::to_string(c), "only printable ASCII characters allowed, or ONLY '_' for empty");
                 }
             }
         }
@@ -177,7 +171,7 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
     } else {
         // 有控制符
         if (tokens.size() < 3 || tokens[1] != "=") {
-            throw SyntaxException(line, "missing '='");
+            throw AutomataSyntaxException(line, "missing '='");
         }
 
         if (tokens[0] == "#Q") {
@@ -187,7 +181,7 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
             // 检查状态名是否合法
             for (auto state : states) {
                 if (!std::regex_match(state, state_regex)) {
-                    throw SyntaxException(state, "only [a-zA-Z0-9_]+ allowed");
+                    throw AutomataSyntaxException(state, "only [a-zA-Z0-9_]+ allowed");
                 }
             }
             context.states = std::move(states);
@@ -199,7 +193,7 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
             // 检查栈符号是否合法
             for (auto symbol : symbols) {
                 if (!isValidSymbol(symbol)) {
-                    throw SyntaxException(std::to_string(symbol), "only printable ASCII characters allowed");
+                    throw AutomataSyntaxException(std::to_string(symbol), "only printable ASCII characters allowed");
                 }
             }
 
@@ -212,7 +206,7 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
             // 检查输入符号是否合法
             for (auto symbol : symbols) {
                 if (!isValidSymbol(symbol)) {
-                    throw SyntaxException(std::to_string(symbol), "only printable ASCII characters allowed");
+                    throw AutomataSyntaxException(std::to_string(symbol), "only printable ASCII characters allowed");
                 }
             }
 
@@ -224,7 +218,7 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
 
             // 检查初始状态是否合法
             if (!std::regex_match(start_state, state_regex)) {
-                throw SyntaxException(start_state, "only [a-zA-Z0-9_]+ allowed");
+                throw AutomataSyntaxException(start_state, "only [a-zA-Z0-9_]+ allowed");
             }
 
             context.start_state = std::move(start_state);
@@ -232,7 +226,7 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
         } else if (tokens[0] == "#z0") {
             // 初始栈符号
             if (tokens[2].size() != 1) {
-                throw SyntaxException(tokens[2], "only single character allowed");
+                throw AutomataSyntaxException(tokens[2], "only single character allowed");
             }
 
             char stack_start_symbol = tokens[2][0];
@@ -240,7 +234,7 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
             // 检查初始栈符号是否合法
 
             if (!isValidSymbol(stack_start_symbol) && stack_start_symbol != '_') {
-                throw SyntaxException(std::to_string(stack_start_symbol), "only printable ASCII characters allowed");
+                throw AutomataSyntaxException(std::to_string(stack_start_symbol), "only printable ASCII characters allowed");
             }
 
             context.stack_start_symbol = stack_start_symbol;
@@ -252,7 +246,7 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
             // 检查终止状态集合是否合法
             for (auto state : final_states) {
                 if (!std::regex_match(state, state_regex)) {
-                    throw SyntaxException(state, "only [a-zA-Z0-9_]+ allowed");
+                    throw AutomataSyntaxException(state, "only [a-zA-Z0-9_]+ allowed");
                 }
             }
 
@@ -306,7 +300,7 @@ std::set<char> PDAParser::parseCharBraces(const std::string& input) {
         std::string token;
         while (std::getline(ss, token, ',')) {
             if (token.size() != 1) {
-                throw SyntaxException(token, "only single character allowed");
+                throw AutomataSyntaxException(token, "only single character allowed");
             }
             result.insert(token[0]);  
         }

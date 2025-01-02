@@ -9,8 +9,6 @@ include_directories(${PROJECT_SOURCE_DIR}/fla-project/include)
 
 file(GLOB_RECURSE CPP_SRC ${PROJECT_SOURCE_DIR}/fla-project/src/*.cpp)
 
-message(STATUS "Source files: ${CPP_SRC}")
-
 set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 add_executable(fla ${CPP_SRC})
 

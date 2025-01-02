@@ -4,8 +4,8 @@
  * Author: Wenze Jin
  */
 
-#include <pda/emulator.h>
-#include <pda/tran_kv.h>
+#include "pda/emulator.h"
+#include "pda/tran_kv.h"
 #include <utils/exception.h>
 #include <stack>
 #include <iostream>
@@ -45,8 +45,15 @@ bool PDAEmulator::run(const std::string& input) {
         std::string next_state;
         std::string stack_action;
 
+        if (idx >= input.size() && context.final_states.find(state) != context.final_states.end())  {
+            // 输入被消耗完且目前在终止状态，直接接受
+            e_state = EmulatorState::ACCEPT;
+            break;
+        }
+
         if(stack.empty()) {
-            e_state = EmulatorState::COS;
+            // 栈空了，但是目前还没接受，直接拒绝
+            e_state = EmulatorState::REJECT;
             break;
         }
 
@@ -58,8 +65,8 @@ bool PDAEmulator::run(const std::string& input) {
         } else {
             // 检查输入符号
             if (idx >= input.size()) {
-                // 输入结束
-                e_state = EmulatorState::EOS;
+                // 输入结束, 且无无条件转移, 且不在接受状态中
+                e_state = EmulatorState::REJECT;
                 break;
             }
 
@@ -69,8 +76,8 @@ bool PDAEmulator::run(const std::string& input) {
                 stack_action = result.stack_action;
                 idx++;
             } else {
-                // 没有可用的转移函数 HALT
-                e_state = EmulatorState::HALT;
+                // 没有可用的转移函数，且目前字符串没消耗完，而且不在接受状态，直接拒绝
+                e_state = EmulatorState::REJECT;
                 break;
             }
         }
@@ -85,39 +92,14 @@ bool PDAEmulator::run(const std::string& input) {
         step_cnt++;
     }
 
-    // 目前已停机，检查Emulator状态和PDA状态
-
-    // 如果是因为 HALT 而停机
-    if (e_state == EmulatorState::HALT) {
+    if (e_state == EmulatorState::ACCEPT) {
+        verboseLog("Result: true");
+        verboseLog("==================== END ====================");
+        return true;
+    } else if (e_state == EmulatorState::REJECT) {
         verboseLog("Result: false");
         verboseLog("==================== END ====================");
         return false;
-    }
-
-    // 如果是因为 COS 而停机
-    if (e_state == EmulatorState::COS) {
-        // 检查输入串是否已经消耗完毕
-        if (idx >= input.size()) {
-            e_state = EmulatorState::EOS;
-        } else {
-            verboseLog("Result: false");
-            verboseLog("==================== END ====================");
-            return false;
-        }
-    }
-
-    // 如果是因为 EOS 而停机
-    if (e_state == EmulatorState::EOS) {
-        // 检查是否在终止状态
-        if (context.final_states.find(state) != context.final_states.end()) {
-            verboseLog("Result: true");
-            verboseLog("==================== END ====================");
-            return true;
-        } else {
-            verboseLog("Result: false");
-            verboseLog("==================== END ====================");
-            return false;
-        }
     }
 
     return false;

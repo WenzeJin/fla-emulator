@@ -3,10 +3,12 @@
  * 
  * Author: Wenze Jin
  */
+#ifndef FLA_PDA_EMULATOR_H
+#define FLA_PDA_EMULATOR_H
 
-#include <pda/context.h>
+#include "pda/context.h"
 #include <string>
-#include <utils/exception.h>
+#include "utils/exception.h"
 #include <stack>
 
 class PDAEmulator {
@@ -18,9 +20,8 @@ class PDAEmulator {
     enum class EmulatorState {
         NEW,            // 创建态
         RUNNING,        // 运行态
-        EOS,            // 因为输入结束而停止       End of String
-        COS,            // 因为栈空而停止       Clear of Stack
-        HALT            // 因为无可用的转移函数而停止
+        ACCEPT,         // 接受态
+        REJECT,         // 拒绝态
     };
 
     void verboseLog(const std::string& message);
@@ -52,3 +53,5 @@ class PDAEmulator {
 
     void setVerboseMode(bool mode);
 };
+
+#endif

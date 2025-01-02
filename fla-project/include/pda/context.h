@@ -11,11 +11,9 @@
 #include <string>
 #include <vector>
 #include <set>
-#include <pda/tran_kv.h>
+#include "pda/tran_kv.h"
 
 using DeltaMap = std::unordered_map<PDATransitionKey, PDATransitionValue, PDATransitionKeyHash>;
-
-// TODO: Change the Implementation to unordered_set
 
 /**
  * Execution context for PDAs. All the information needed to run a PDA is stored here.
@@ -54,8 +52,8 @@ struct PDAContext {
      * @return true if the transition is added successfully, false otherwise.
      */
     bool addTransition( const std::string& state,           // q
-                        const char input_symbol,    // a
-                        const char stack_top,       // X
+                        const char input_symbol,            // a
+                        const char stack_top,               // X
                         const std::string& next_state,      // q'
                         const std::string& stack_action );  // Y
     /**
@@ -68,11 +66,12 @@ struct PDAContext {
      * 
      * @return The transition result, in PDAQueryResult.
      */
-    PDAQueryResult getTransition( const std::string& state,             // q
+    PDAQueryResult getTransition( const std::string& state,     // q
                                   const char input_symbol,      // a
                                   const char stack_top ) const; // X
 
 private:
+    
     /**
      * Get the transition from the transition table.
      * User will not need to use structure PDATransitionKey or PDATrasitionValue directly.

@@ -4,7 +4,7 @@
  * Author: Wenze Jin
  */
 
-#include <pda/parser.h>
+#include "pda/parser.h"
 
 #include <fstream>
 #include <sstream>
@@ -27,8 +27,6 @@ std::set<std::string> PDAParser::control_tokens = {
 };
 
 std::regex PDAParser::state_regex = std::regex("[a-zA-Z0-9_]+");
-
-
 
 
 /**
@@ -108,11 +106,10 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
     // 检查控制符
     if (control_tokens.find(tokens[0]) == control_tokens.end()) {
         // 无控制符 是转移函数
-        // TODO: 解析转移函数
 
         // 检查tokens的数量是否满足转移函数要求：5个
         if (tokens.size() != 5) {
-            throw AutomataSyntaxException(line, "invalid number of tokens");
+            throw AutomataSyntaxException(line, "Invalid number of tokens for a transition");
         }
 
         std::string state, next_state, stack_action;
@@ -263,7 +260,7 @@ std::set<std::string> PDAParser::parseStrBraces(const std::string& input) {
     size_t end = input.find('}');
 
     // 如果找到有效的大括号位置
-    if (start != std::string::npos && end != std::string::npos && end > start + 1) {
+    if (start != std::string::npos && end != std::string::npos && start == 0 && end == input.length() - 1) {
         std::string content = input.substr(start + 1, end - start - 1);  // 提取 {} 中的内容
 
         // 使用 stringstream 按逗号分割字符串，但不去除空格
@@ -272,6 +269,8 @@ std::set<std::string> PDAParser::parseStrBraces(const std::string& input) {
         while (std::getline(ss, token, ',')) {
             result.insert(token);  
         }
+    } else {
+        throw AutomataSyntaxException(input, "Expected {}.");
     }
 
     return result;
@@ -292,7 +291,7 @@ std::set<char> PDAParser::parseCharBraces(const std::string& input) {
     size_t end = input.find('}');
 
     // 如果找到有效的大括号位置
-    if (start != std::string::npos && end != std::string::npos && end > start + 1) {
+    if (start != std::string::npos && end != std::string::npos && start == 0 && end == input.length() - 1) {
         std::string content = input.substr(start + 1, end - start - 1);  // 提取 {} 中的内容
 
         // 使用 stringstream 按逗号分割字符串，但不去除空格
@@ -304,6 +303,8 @@ std::set<char> PDAParser::parseCharBraces(const std::string& input) {
             }
             result.insert(token[0]);  
         }
+    } else {
+        throw AutomataSyntaxException(input, "Expected {}.");
     }
 
     return result;

@@ -4,9 +4,8 @@
  * Author: Wenze Jin
  */
 
-#include <pda/context.h>
+#include "pda/context.h"
 #include <algorithm>  // For std::all_of
-#include <iostream>
 
 /**
  * Validate the PDA context to ensure it is correctly configured.

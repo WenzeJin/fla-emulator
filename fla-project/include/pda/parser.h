@@ -20,16 +20,6 @@ class PDAParser {
      */
     static void parseLine(const std::string& line, PDAContext& context);
 
-    /**
-     * 解析集合类型的输入，解析为字符串集合。
-     */
-    static std::set<std::string> parseStrBraces(const std::string &input);
-
-    /**
-     * 解析集合类型的输入，解析为字符集合。
-     */
-    static std::set<char> parseCharBraces(const std::string &input);
-
     static void linePreprocess(std::string& line);
 
     static std::set<std::string> control_tokens;
@@ -38,7 +28,7 @@ class PDAParser {
 
     static bool isValidSymbol(char c);
 
-  public:
+public:
     /**
      * Parse a PDA configuration file.
      * 

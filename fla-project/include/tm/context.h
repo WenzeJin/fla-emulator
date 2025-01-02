@@ -42,7 +42,7 @@ struct TMContext {
 
 
     bool addTransition(const std::string &state, const std::string& input_chars, const std::string &replace_chars,
-                       const std::vector<TapeDirection> tape_directions, const std::string &next_state);
+                       const std::vector<TapeDirection> &tape_directions, const std::string &next_state);
 
     TMQueryResult getTransition(const std::string& state, const std::string& input_chars) const;
 

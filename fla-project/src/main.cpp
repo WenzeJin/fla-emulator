@@ -8,6 +8,8 @@
 #include "pda/parser.h"
 #include "pda/emulator.h"
 
+#include "tm/parser.h"
+
 #include "utils/exception.h"
 
 // 假设 PDAHandler 和 TMHandler 的接口
@@ -20,9 +22,26 @@ void PDAHandler(const std::string& pdaFile, const std::string& inputStr, bool ve
 }
 
 void TMHandler(const std::string& tmFile, const std::string& inputStr, bool verbose) {
-    std::cout << "[TMHandler] Processing TM: " << tmFile << ", Input: " << inputStr
-              << ", Verbose: " << (verbose ? "enabled" : "disabled") << std::endl;
-    // TM 逻辑实现...
+    TMContext context = TMParser::parse(tmFile);
+    std::cout << "States: ";
+    for (const auto& state : context.states) {
+        std::cout << state << " ";
+    }
+    std::cout << "\nInput Symbols: ";
+    for (const auto& input : context.input_alphabet) {
+        std::cout << input << " ";
+    }
+    std::cout << "\nTape Symbols: ";
+    for (const auto& symbol : context.tape_alphabet) {
+        std::cout << symbol << " ";
+    }
+    std::cout << "\nStart State: " << context.start_state;
+    std::cout << "\nBlank Symbol: " << context.blank_char;
+    std::cout << "\nFinal States: ";
+    for (const auto& state : context.final_states) {
+        std::cout << state << " ";
+    }
+    std::cout << std::endl;
 }
 
 // 检查字符串是否以指定后缀结尾

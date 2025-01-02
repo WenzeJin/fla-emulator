@@ -6,16 +6,14 @@
 
 #include "pda/parser.h"
 
+#include "utils/parse_token.h"
 #include <fstream>
 #include <sstream>
-#include <stdexcept>
-#include <vector>
-#include <unordered_map>
-#include <set>
-#include <algorithm>
-#include <regex>
 
-#include <iostream>
+#include <algorithm>
+
+
+
 
 std::set<std::string> PDAParser::control_tokens = {
     "#Q",
@@ -57,9 +55,12 @@ PDAContext PDAParser::parse(const std::string& filepath) {
             parseLine(line, context);
         } catch (AutomataSyntaxException& e) {
             e.setLine(line_idx, line);
+            file.close();
             throw e;
         }
     }
+
+    file.close();
 
     return context;
 }
@@ -105,8 +106,12 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
 
     // 检查控制符
     if (control_tokens.find(tokens[0]) == control_tokens.end()) {
-        // 无控制符 是转移函数
+        // 无可用控制符，此时第一个token不应该以#开头
+        if (tokens[0][0] == '#') {
+            throw AutomataSyntaxException(tokens[0], "Start with '#' but not a valid control token.");
+        }
 
+        // 是转移函数
         // 检查tokens的数量是否满足转移函数要求：5个
         if (tokens.size() != 5) {
             throw AutomataSyntaxException(line, "Invalid number of tokens for a transition");
@@ -167,13 +172,17 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
 
     } else {
         // 有控制符
-        if (tokens.size() < 3 || tokens[1] != "=") {
+        if (tokens.size() != 3) {
+            throw AutomataSyntaxException(line, "invalid token num");
+        }
+
+        if (tokens[1] != "=") {
             throw AutomataSyntaxException(line, "missing '='");
         }
 
         if (tokens[0] == "#Q") {
             // 状态集
-            std::set<std::string> states = parseStrBraces(tokens[2]); 
+            std::set<std::string> states = parseStrSet(tokens[2]);
 
             // 检查状态名是否合法
             for (auto state : states) {
@@ -185,7 +194,7 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
 
         } else if (tokens[0] == "#G") {
             // 栈符号集
-            std::set<char> symbols = parseCharBraces(tokens[2]);
+            std::set<char> symbols = parseCharSet(tokens[2]);
 
             // 检查栈符号是否合法
             for (auto symbol : symbols) {
@@ -198,7 +207,7 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
 
         } else if (tokens[0] == "#S") {
             // 输入符号集
-            std::set<char> symbols = parseCharBraces(tokens[2]);
+            std::set<char> symbols = parseCharSet(tokens[2]);
 
             // 检查输入符号是否合法
             for (auto symbol : symbols) {
@@ -238,7 +247,7 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
 
         } else if (tokens[0] == "#F") {
             // 终止状态集
-            std::set<std::string> final_states = parseStrBraces(line);
+            std::set<std::string> final_states = parseStrSet(tokens[2]);
 
             // 检查终止状态集合是否合法
             for (auto state : final_states) {
@@ -250,64 +259,8 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
             context.final_states = std::move(final_states);
         }
     }
-}
 
-std::set<std::string> PDAParser::parseStrBraces(const std::string& input) {
-    std::set<std::string> result;
-
-    // 找到第一个 '{' 和最后一个 '}'
-    size_t start = input.find('{');
-    size_t end = input.find('}');
-
-    // 如果找到有效的大括号位置
-    if (start != std::string::npos && end != std::string::npos && start == 0 && end == input.length() - 1) {
-        std::string content = input.substr(start + 1, end - start - 1);  // 提取 {} 中的内容
-
-        // 使用 stringstream 按逗号分割字符串，但不去除空格
-        std::stringstream ss(content);
-        std::string token;
-        while (std::getline(ss, token, ',')) {
-            result.insert(token);  
-        }
-    } else {
-        throw AutomataSyntaxException(input, "Expected {}.");
-    }
-
-    return result;
-}
-
-/**
- * 解析集合类型的输入，解析为字符集合。
- * 
- * @param input 输入字符串
- * @return 字符集合
- * @throw SyntaxException 如果输入格式不正确，即有项目不是单个字符
- */
-std::set<char> PDAParser::parseCharBraces(const std::string& input) {
-    std::set<char> result;
-
-    // 找到第一个 '{' 和最后一个 '}'
-    size_t start = input.find('{');
-    size_t end = input.find('}');
-
-    // 如果找到有效的大括号位置
-    if (start != std::string::npos && end != std::string::npos && start == 0 && end == input.length() - 1) {
-        std::string content = input.substr(start + 1, end - start - 1);  // 提取 {} 中的内容
-
-        // 使用 stringstream 按逗号分割字符串，但不去除空格
-        std::stringstream ss(content);
-        std::string token;
-        while (std::getline(ss, token, ',')) {
-            if (token.size() != 1) {
-                throw AutomataSyntaxException(token, "only single character allowed");
-            }
-            result.insert(token[0]);  
-        }
-    } else {
-        throw AutomataSyntaxException(input, "Expected {}.");
-    }
-
-    return result;
+    
 }
 
 bool PDAParser::isValidSymbol(char c) {

@@ -9,6 +9,7 @@
 #include "pda/emulator.h"
 
 #include "tm/parser.h"
+#include "tm/emulator.h"
 
 #include "utils/exception.h"
 
@@ -18,30 +19,19 @@ void PDAHandler(const std::string& pdaFile, const std::string& inputStr, bool ve
     PDAEmulator emulator(context);
     emulator.setVerboseMode(verbose);
     bool result = emulator.run(inputStr);
-    std::cout << (result ? "true" : "false") << std::endl;
+    if (!verbose) {
+        std::cout << (result ? "true" : "false") << std::endl;
+    }
 }
 
 void TMHandler(const std::string& tmFile, const std::string& inputStr, bool verbose) {
     TMContext context = TMParser::parse(tmFile);
-    std::cout << "States: ";
-    for (const auto& state : context.states) {
-        std::cout << state << " ";
+    TMEmulator emulator(context);
+    emulator.setVerboseMode(verbose);
+    auto result = emulator.run(inputStr);
+    if (!verbose) {
+        std::cout << result << std::endl;
     }
-    std::cout << "\nInput Symbols: ";
-    for (const auto& input : context.input_alphabet) {
-        std::cout << input << " ";
-    }
-    std::cout << "\nTape Symbols: ";
-    for (const auto& symbol : context.tape_alphabet) {
-        std::cout << symbol << " ";
-    }
-    std::cout << "\nStart State: " << context.start_state;
-    std::cout << "\nBlank Symbol: " << context.blank_char;
-    std::cout << "\nFinal States: ";
-    for (const auto& state : context.final_states) {
-        std::cout << state << " ";
-    }
-    std::cout << std::endl;
 }
 
 // 检查字符串是否以指定后缀结尾
@@ -123,9 +113,8 @@ int main(int argc, char* argv[]) {
 
     } catch (const InputSyntaxError& e) {
         // 打印错误信息并退出
-        std::cerr << "illegal input" << std::endl;
-        if (verbose) {
-            std::cerr << e.what() << std::endl;
+        if (!verbose) {
+            std::cerr << "illegal input" << std::endl;
         }
         return 1;
     } catch (const AutomataSyntaxException& e) {
@@ -137,7 +126,7 @@ int main(int argc, char* argv[]) {
         return 1;
     } catch (const AutomataStructureException& e) {
         // 打印错误信息并退出
-        // XXX: maybe we should print structure error, but the requirement is not clear
+        // XXX: maybe we should print structure or sementic error, but the requirement is not clear
         std::cerr << "syntax error" << std::endl;
         if (verbose) {
             std::cerr << e.what() << std::endl;

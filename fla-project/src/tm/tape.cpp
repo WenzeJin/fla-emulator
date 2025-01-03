@@ -30,8 +30,12 @@ void TMTape::clear() {
     tape.push_back(blank);
 }
 
-char TMTape::read() {
-    return tape[head-left_idx];
+char TMTape::read() const {
+    return tape[head - left_idx];
+}
+
+void TMTape::write(char ch) {
+    tape[head - left_idx] = ch;
 }
 
 void TMTape::moveLeft() {
@@ -61,4 +65,41 @@ void TMTape::minimize() {
     while (head - left_idx + 1 < tape.size() && tape.size() > 1 && tape.back() == blank) {
         tape.pop_back();
     }
+}
+
+std::string TMTape::getNonBlank() const {
+    int temp = 0;
+    return getNonBlank(temp);
+}
+
+std::string TMTape::getNonBlank(int &idx) const {
+    int left = 0;
+    int right = tape.size() - 1;
+
+    for (; left < tape.size(); left++) {
+        if (tape[left] != blank || left == head - left_idx) {
+            break;
+        }
+    }
+
+    for (; right > head - left_idx && right >= 0; right--) {
+        if (tape[right] != blank || right == head - left_idx) {
+            break;
+        }
+    }
+    
+    std::string temp;
+
+    if (left > right) {
+        idx = head;
+        return temp + blank;
+    }
+
+    for (int i = left; i <= right; i++) {
+        temp += tape[i];
+    }
+
+    idx = left + left_idx;
+
+    return temp;
 }

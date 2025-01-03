@@ -5,6 +5,7 @@
  */
 
 #include "tm/context.h"
+#include "utils/exception.h"
 #include <algorithm>
 
 bool TMContext::validate() const {

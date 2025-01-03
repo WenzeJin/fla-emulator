@@ -86,6 +86,59 @@ void TMParser::parseLine(const std::string& line, TMContext& context) {
         }
 
         // TODO: 处理转移函数
+        if (tokens.size() != 5) {
+            throw AutomataSyntaxException(line, "invalid number of tokens for a transition");
+        }
+
+        std::string state, next_state, input_chars, replace_chars;
+        std::vector<TapeDirection> tape_directions;
+
+        if (std::regex_match(tokens[0], state_regex)) {
+            state = tokens[0];
+        } else  {
+            throw AutomataSyntaxException(tokens[0], "only [a-zA-Z0-9_]+ allowed");
+        }
+
+        if (std::regex_match(tokens[4], state_regex)) {
+            next_state = tokens[4];
+        } else {
+            throw AutomataSyntaxException(tokens[0], "only [a-zA-Z0-9_]+ allowed");
+        }
+
+        for (auto ch : tokens[1]) {
+            if (ch == '*' || ch == blank_default || isValidSymbol(ch)) {
+                input_chars += ch;
+            } else {
+                throw AutomataSyntaxException(tokens[1], "found invalid symbols");
+            }
+        }
+
+        for (auto ch : tokens[2]) {
+            if (ch == '*' || ch == blank_default || isValidSymbol(ch)) {
+                replace_chars += ch;
+            } else {
+                throw AutomataSyntaxException(tokens[2], "found invalid symbols");
+            }
+        }
+
+        for (auto ch : tokens[3]) {
+            switch (ch) {
+            case 'l':
+                tape_directions.push_back(TapeDirection::LEFT);
+                break;
+            case 'r':
+                tape_directions.push_back(TapeDirection::RIGHT);
+                break;
+            case '*':
+                tape_directions.push_back(TapeDirection::STAY);
+                break;
+            default:
+                throw AutomataSyntaxException(tokens[3], "only 'lr*' allowed in tape directions");
+            }
+        }
+
+        context.addTransition(state, input_chars, replace_chars, tape_directions, next_state);
+
     } else {
         if (tokens.size() != 3) {
             throw AutomataSyntaxException(line, "invalid token num");
@@ -121,10 +174,10 @@ void TMParser::parseLine(const std::string& line, TMContext& context) {
             context.input_alphabet = std::move(symbols);
 
         } else if (tokens[0] == "#G") {
-            // 栈符号集
+            // 纸带
             std::set<char> symbols = parseCharSet(tokens[2]);
 
-            // 检查栈符号是否合法
+            // 检查纸带符号是否合法
             for (auto symbol : symbols) {
                 if (!(isValidSymbol(symbol) || (symbol == blank_default))) {
                     throw AutomataSyntaxException(std::to_string(symbol), "only printable ASCII characters allowed");
@@ -171,6 +224,7 @@ void TMParser::parseLine(const std::string& line, TMContext& context) {
                 if (number < 1) {
                     throw AutomataSyntaxException(tokens[2], "require tape num > 0");
                 }
+                context.tape_num = number;
             } catch (const std::invalid_argument &e) {
                 throw AutomataSyntaxException(tokens[2], "not a valid number");
             } catch (const std::out_of_range &e) {

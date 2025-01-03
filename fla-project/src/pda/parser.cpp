@@ -168,8 +168,6 @@ void PDAParser::parseLine(const std::string& line, PDAContext& context) {
         // 添加转移函数
         context.addTransition(state, input_symbol, stack_top_symbol, next_state, stack_action);
 
-        return;
-
     } else {
         // 有控制符
         if (tokens.size() != 3) {

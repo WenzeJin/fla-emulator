@@ -6,7 +6,7 @@
 
 #include "pda/emulator.h"
 #include "pda/tran_kv.h"
-#include <utils/exception.h>
+#include "utils/exception.h"
 #include <stack>
 #include <iostream>
 
@@ -29,7 +29,7 @@ bool PDAEmulator::run(const std::string& input) {
     int idx = checkSyntaxError(input);
     if (idx != -1) {
         verboseLogSyntaxError(input, idx);
-        verboseLog("==================== END ====================");
+        verboseLogError("==================== END ====================");
         throw InputSyntaxError(input);
     }
 
@@ -117,13 +117,13 @@ void PDAEmulator::verboseLog(const std::string& message) {
 
 void PDAEmulator::verboseLogError(const std::string& message) {
     if (verbose_mode) {
-        std::cout << "==================== ERR ====================" << std::endl;
-        std::cout << message << std::endl;
+        std::cerr << message << std::endl;
     }
 }
 
 void PDAEmulator::verboseLogSyntaxError(const std::string& input, const int idx) {
     if (verbose_mode) {
+        verboseLogError("==================== ERR ====================");
         std::string message;
         message += "error: '" + std::string(1, input[idx]) + "' was not declared in the set of input symbols\n";
         message += "Input: " + input + "\n";

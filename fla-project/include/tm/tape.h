@@ -31,7 +31,7 @@ public:
      */
     void init(std::string init_string);
 
-    char read();
+    char read() const;
 
     void write(char x);
 
@@ -47,17 +47,21 @@ public:
     void minimize();
 
 
-    inline int getLeftIdx() {
+    inline int getLeftIdx() const {
         return left_idx;
     }
 
-    inline int getHead() {
+    inline int getHead() const {
         return head;
     }
 
-    inline const std::deque<char>& getTape() {
+    inline const std::deque<char>& getTape() const {
         return tape;
     }
+
+    std::string getNonBlank() const;
+
+    std::string getNonBlank(int &idx) const;
 };
 
 #endif

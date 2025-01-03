@@ -40,8 +40,8 @@ class PDAEmulator {
      */
     int checkSyntaxError(const std::string& input);
 
-  public:
-    PDAEmulator(const PDAContext& context);
+public:
+    explicit PDAEmulator(const PDAContext& context);
 
     /**
      * Run the PDA emulator.

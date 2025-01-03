@@ -1,0 +1,30 @@
+; This program checks if the input string has balanced parentheses
+; Input: a string containing only '(' and ')'
+
+; the finite set of states
+#Q = {q,acc,rej}
+
+; the finite set of input symbols
+#S = {(,)}
+
+; the complete set of stack symbols
+#G = {z,(}
+
+; the start state
+#q0 = q
+
+; the start stack symbol
+#z0 = z
+
+; the set of final states
+#F = {acc}
+
+; the transition functions
+
+
+q ( z q (z
+q ( ( q ((
+q ) z rej z
+q ) ( q _
+q _ z acc z
+q _ ( rej (

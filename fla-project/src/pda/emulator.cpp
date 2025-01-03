@@ -45,11 +45,7 @@ bool PDAEmulator::run(const std::string& input) {
         std::string next_state;
         std::string stack_action;
 
-        if (idx >= input.size() && context.final_states.find(state) != context.final_states.end())  {
-            // 输入被消耗完且目前在终止状态，直接接受
-            e_state = EmulatorState::ACCEPT;
-            break;
-        }
+        PDAQueryResult result;
 
         if(stack.empty()) {
             // 栈空了，但是目前还没接受，直接拒绝
@@ -57,19 +53,22 @@ bool PDAEmulator::run(const std::string& input) {
             break;
         }
 
-        // 首先检查无条件转移
-        PDAQueryResult result = context.getTransition(state, '_', stack.top());
-        if (result.success) {
-            next_state = result.next_state;
-            stack_action = result.stack_action;
-        } else {
-            // 检查输入符号
-            if (idx >= input.size()) {
+        if (idx >= input.size() && context.final_states.find(state) != context.final_states.end())  {
+            // 输入被消耗完且目前在终止状态，直接接受
+            e_state = EmulatorState::ACCEPT;
+            break;
+        } else if (idx >= input.size()) {
+            // 尝试空转移
+            result = context.getTransition(state, '_', stack.top());
+            if (result.success) {
+                next_state = result.next_state;
+                stack_action = result.stack_action;
+            } else {
                 // 输入结束, 且无无条件转移, 且不在接受状态中
                 e_state = EmulatorState::REJECT;
                 break;
             }
-
+        } else {
             result = context.getTransition(state, input[idx], stack.top());
             if (result.success) {
                 next_state = result.next_state;
@@ -81,6 +80,9 @@ bool PDAEmulator::run(const std::string& input) {
                 break;
             }
         }
+
+        
+
 
         // 实施转移
         state = next_state;

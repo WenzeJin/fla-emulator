@@ -94,7 +94,7 @@ std::string TMEmulator::run(const std::string &input) {
     }
 
     if (e_state == EmulatorState::ACCEPT || e_state == EmulatorState::HALT) {
-        auto content = tapes[0].getNonBlank();
+        auto content = tapes[0].getAnswer();
         verboseLog("Result: " + content);
         verboseLog("==================== END ====================");
         return content;

@@ -21,6 +21,9 @@ void TMTape::init(std::string init_string) {
     for (auto x: init_string) {
         tape.push_back(x);
     }
+    if (tape.size() == 0) {
+        tape.push_back(blank);
+    }
 }
 
 void TMTape::clear() {
@@ -67,9 +70,30 @@ void TMTape::minimize() {
     }
 }
 
-std::string TMTape::getNonBlank() const {
-    int temp = 0;
-    return getNonBlank(temp);
+std::string TMTape::getAnswer() const {
+    int left = 0;
+    int right = tape.size() - 1;
+
+    for (; left < tape.size(); left++) {
+        if (tape[left] != blank) {
+            break;
+        }
+    }
+
+    for (; right > head - left_idx && right >= 0; right--) {
+        if (tape[right] != blank) {
+            break;
+        }
+    }
+    
+    std::string temp;
+
+
+    for (int i = left; i <= right; i++) {
+        temp += tape[i];
+    }
+
+    return temp;
 }
 
 std::string TMTape::getNonBlank(int &idx) const {

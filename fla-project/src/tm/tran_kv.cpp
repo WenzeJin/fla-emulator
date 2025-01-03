@@ -6,7 +6,7 @@
 
 #include "tm/tran_kv.h"
 
-
+#include <iostream>
 
 TMTransitionKey::TMTransitionKey(std::string state, std::string input_chars) : state(state), input_chars(input_chars) {}
 
@@ -56,13 +56,18 @@ bool matchesWithWildcard(const std::string& input_chars, const std::string& stor
 TMQueryResult TMDeltaMap::query(const TMTransitionKey &key) const {
     TMTransitionValue result("", "", std::vector<TapeDirection>());
     bool success = false;
-
-    for (const auto& pair : _map) {
-        const TMTransitionKey& stored_key = pair.first;
-        if (stored_key.state == key.state && matchesWithWildcard(key.input_chars, stored_key.input_chars)) {
-            result = pair.second;
-            success = true;
-            break;
+    auto it = _map.find(key);
+    if (it != _map.end()) {
+        result = it->second;
+        success = true;
+    } else {
+        for (const auto& pair : _map) {
+            const TMTransitionKey& stored_key = pair.first;
+            if (stored_key.state == key.state && matchesWithWildcard(key.input_chars, stored_key.input_chars)) {
+                result = pair.second;
+                success = true;
+                break;
+            }
         }
     }
 

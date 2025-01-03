@@ -59,7 +59,7 @@ public:
         return tape;
     }
 
-    std::string getNonBlank() const;
+    std::string getAnswer() const;
 
     std::string getNonBlank(int &idx) const;
 };

@@ -15,9 +15,13 @@
 ./build.sh
 ```
 
-## 如何使用
+或
 
-目前已经支持模拟 PDA。
+1. 将所有`.h` 以及`.cpp`文件置于`/fla-project`文件夹下，或者将该框架的`CMakeLists.txt`复制至你的工程根目录
+2. 在工程根目录处，使用指令`cmake -B build`
+3. 在工程根目录处，使用指令`cd ./build; make`
+
+## 如何使用
 
 ```
 Usage: fla [-h|--help] [-v|--verbose] <automata_file> <input_str>
@@ -30,3 +34,5 @@ Usage: fla [-h|--help] [-v|--verbose] <automata_file> <input_str>
 一般情况下的输出：
 
 __for PDA__: `true` 或 `false`, 或错误信息 `syntax error` （PDA描述文件语法或语义有误）`illegal input`（输入串不合法）
+
+__for TM__: Tape0 上的最后有效内容，或错误信息 `syntax error` （TM描述文件语法或语义有误）`illegal input`（输入串不合法）

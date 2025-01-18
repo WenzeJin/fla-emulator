@@ -80,7 +80,7 @@ std::string TMTape::getAnswer() const {
         }
     }
 
-    for (; right > head - left_idx && right >= 0; right--) {
+    for (; right >= left && right >= 0; right--) {
         if (tape[right] != blank) {
             break;
         }

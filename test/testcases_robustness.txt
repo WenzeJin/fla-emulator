@@ -1,0 +1,7 @@
+./bin/fla ./test/testcases/syntax1.tm 1010
+./bin/fla ./test/testcases/syntax2.tm 1010
+./bin/fla ./test/testcases/syntax3.tm 1010
+./bin/fla ./test/testcases/square.tm 1000
+./bin/fla ./test/testcases/square.tm 1111111111111a111111111
+./bin/fla ./test/testcases/square.tm 111111111b1111111111111
+./bin/fla ./test/testcases/binary_mul.tm 111111*11111111

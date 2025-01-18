@@ -24,13 +24,14 @@ bool PDAEmulator::run(const std::string& input) {
     std::stack<char> stack;
     stack.push(context.stack_start_symbol);
 
-    verboseLog("Input: " + input);
-
     int idx = checkSyntaxError(input);
     if (idx != -1) {
+        verboseLogError("Input: " + input);
         verboseLogSyntaxError(input, idx);
         verboseLogError("==================== END ====================");
         throw InputSyntaxError(input);
+    } else {
+        verboseLog("Input: " + input);
     }
 
     e_state = EmulatorState::RUNNING;
@@ -47,22 +48,25 @@ bool PDAEmulator::run(const std::string& input) {
 
         PDAQueryResult result;
 
+        if (idx >= input.size() && context.final_states.find(state) != context.final_states.end())  {
+            // 输入被消耗完且目前在终止状态，直接接受
+            e_state = EmulatorState::ACCEPT;
+            break;
+        } 
+
         if(stack.empty()) {
             // 栈空了，但是目前还没接受，直接拒绝
             e_state = EmulatorState::REJECT;
             break;
         }
-
-        if (idx >= input.size() && context.final_states.find(state) != context.final_states.end())  {
-            // 输入被消耗完且目前在终止状态，直接接受
-            e_state = EmulatorState::ACCEPT;
-            break;
-        } else if (idx >= input.size()) {
-            // 尝试空转移
+        
+        if (idx >= input.size()) {
+            // 输入结束，尝试空转移
             result = context.getTransition(state, '_', stack.top());
             if (result.success) {
                 next_state = result.next_state;
                 stack_action = result.stack_action;
+                std::cerr << "stack_action: " << stack_action << std::endl;
             } else {
                 // 输入结束, 且无无条件转移, 且不在接受状态中
                 e_state = EmulatorState::REJECT;
@@ -75,14 +79,18 @@ bool PDAEmulator::run(const std::string& input) {
                 stack_action = result.stack_action;
                 idx++;
             } else {
-                // 没有可用的转移函数，且目前字符串没消耗完，而且不在接受状态，直接拒绝
-                e_state = EmulatorState::REJECT;
-                break;
+                // 没有可用转移，尝试空转移
+                result = context.getTransition(state, '_', stack.top());
+                if (result.success) {
+                    next_state = result.next_state;
+                    stack_action = result.stack_action;
+                } else {
+                    // 无可用转移
+                    e_state = EmulatorState::REJECT;
+                    break;
+                }
             }
         }
-
-        
-
 
         // 实施转移
         state = next_state;

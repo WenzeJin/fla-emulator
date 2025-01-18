@@ -8,10 +8,10 @@
 #S = {(,)}
 
 ; the complete set of stack symbols
-#G = {z,(}
+#G = {z,(,x}
 
 ; the start state
-#q0 = q
+#q0 = acc
 
 ; the start stack symbol
 #z0 = z
@@ -21,10 +21,10 @@
 
 ; the transition functions
 
-
-q ( z q (z
+q ( x q (x
 q ( ( q ((
 q ) z rej z
 q ) ( q _
-q _ z acc z
-q _ ( rej (
+q ) x acc _
+acc ) z rej z
+acc ( z q xz

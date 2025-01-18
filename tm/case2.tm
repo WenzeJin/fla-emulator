@@ -15,7 +15,7 @@ one __ __ ** reject1
 judge __ __ ** accept1
 judge 1_ 1_ *l left
 
-left 1* 1* *l left
+left 11 11 *l left
 left 1_ 1_ *r right
 
 right 11 _1 rr right

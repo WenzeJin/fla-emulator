@@ -36,3 +36,7 @@ Usage: fla [-h|--help] [-v|--verbose] <automata_file> <input_str>
 __for PDA__: `true` 或 `false`, 或错误信息 `syntax error` （PDA描述文件语法或语义有误）`illegal input`（输入串不合法）
 
 __for TM__: Tape0 上的最后有效内容，或错误信息 `syntax error` （TM描述文件语法或语义有误）`illegal input`（输入串不合法）
+
+## 如何测试
+
+参见 `test` 文件夹下的测试脚本及对应的 README.md

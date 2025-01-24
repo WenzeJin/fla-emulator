@@ -28,13 +28,13 @@ false
 1101110010111101010100110101110
 110101010101111011011010110010111011000110101011
 ccccccccc
-
-
+illegal_input
+illegal_input
 cccccccccccc
 cccccccccccc
 illegal_input
 illegal_input
-
+illegal_input
 a
 abab
 aaaabbbb

@@ -1,14 +1,17 @@
-#Q = {cka,ckb,ckd,cp,mul1,mul2,reset,illl,ill0,ill1,ill2,ill3,ill4,ill5,ill6,ill7,ill8,ill9,ill10,ill11,ill12,halt}
+#Q = {cka,ck0,ckb,ckd,cp,mul1,mul2,reset,illl,ill0,ill1,ill2,ill3,ill4,ill5,ill6,ill7,ill8,ill9,ill10,ill11,ill12,halt}
 #S = {a,b}
 #G = {a,b,c,_,i,l,e,g,n,p,u,t}
-#q0 = cka
+#q0 = ck0
 #B = _
 #F = {halt}
 #N = 3
 
 ; check if the input is a*b*
+ck0 a__ a__ r** cka
+ck0 b__ b__ *** illl
+ck0 ___ ___ *** illl
 cka a__ a__ r** cka
-cka ___ ___ l** ckd
+cka ___ ___ l** illl
 cka b__ b__ r** ckb
 ckb b__ b__ r** ckb
 ckb ___ ___ l** ckd
